@@ -178,3 +178,36 @@ def mean_dataset(dataset, column):
     m = dataset[[column]].mean()
     return m
 
+plt.ion()
+# ---------------------------------------------------------------------------------------------------------------------
+
+# Load the datasets.
+health_issues = gpd.read_file('Datafiles/Health_Problems.shp')
+deprivation_indicator = gpd.read_file('Datafiles/Deprivation(SA2011).shp')
+towns = gpd.read_file('Datafiles/Towns.shp')
+water = gpd.read_file('Datafiles/Water.shp')
+rivers = gpd.read_file('Datafiles/Rivers.shp')
+counties = gpd.read_file('Datafiles/Counties.shp')
+outline = gpd.read_file('Datafiles/NI_outline.shp')
+
+# ---------------------------------------------------------------------------------------------------------------------
+health_issues.head()
+
+# Display the column headers of the long-term health problem GeoDataset.
+print(health_issues.columns.values)
+
+ # Create new column that displays the % of the population has a long-term health issue per Small Area.
+for i, row in health_issues.iterrows():# iterate over each row in the GeoDataFrame.
+    health_issues["PC_LTHP"] = (health_issues["LTHP_littl"] + row["LTHP_lot"]) / row["residents"] * 100
+
+print(health_issues.head()) # print the updated GeoDataFrame to view the new column.
+
+# Find the mean, max and min % LTHP per Small Area and print using the format string method.
+
+max_LTHP = max_dataset(health_issues,"PC_LTHP")
+min_LTHP = min_dataset(health_issues,"PC_LTHP")
+mean_LTHP = mean_dataset(health_issues,"PC_LTHP")
+
+print("the maximum percentage of long-term health problems per small area population is",max_LTHP)
+print("the minimum percentage of long-term health problems per small area population is",min_LTHP)
+print("the mean percentage of long-term health problems per small area population is",mean_LTHP)
