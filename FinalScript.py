@@ -211,3 +211,41 @@ mean_LTHP = mean_dataset(health_issues,"PC_LTHP")
 print("the maximum percentage of long-term health problems per small area population is",max_LTHP)
 print("the minimum percentage of long-term health problems per small area population is",min_LTHP)
 print("the mean percentage of long-term health problems per small area population is",mean_LTHP)
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set both features to the same projection before adding to the map.
+counties = counties.to_crs(epsg=32629)
+health_issues = health_issues.to_crs(epsg=32629)
+
+myCRS = ccrs.UTM(29)  # create a Universal Transverse Mercator reference system to transform our data.
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 10), subplot_kw=dict(projection=myCRS))
+
+# add a color bar that aligns with the map boundaries.
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.1, axes_class=plt.Axes)
+
+# add the LTHP data to the map.
+MDM_plot = health_issues.plot(column='PC_LTHP', ax=ax, vmin=12, vmax=80, cmap='cividis',
+                            legend=True, cax=cax, legend_kwds={'label': '% of Long-Term Health Problems'})
+
+# add county outlines to the map.
+countyoutlines()
+county_handles = generate_handles([''], ['none'], edge='g')
+
+# add water features to the map.
+waterfeature()
+water_handle = generate_handles(['Lakes'], ['mediumblue'])
+
+# add legend.
+handles = water_handle + county_handles
+labels = ['Lakes','County Boundaries']
+leg()
+
+# add a scale bar.
+scale_bar(ax, 20)
+
+# save the figure.
+fig.savefig("map1.png", dpi=300, bbox_inches='tight')
+
+# ------------------------------------------------------------------------------------------------------------
