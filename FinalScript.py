@@ -246,6 +246,65 @@ leg()
 scale_bar(ax, 20)
 
 # save the figure.
-fig.savefig("map1.png", dpi=300, bbox_inches='tight')
+fig.savefig("LTHPmap.png", dpi=300, bbox_inches='tight')
+
+# ------------------------------------------------------------------------------------------------------------
+# join the deprivation and health issues GeoDataframe objects in order to assess the variables' relationship
+deprivation_indicator = deprivation_indicator.to_crs(epsg=32629)
+# Ensure that both GeoDataframe objects have the same CRS before joining
+print(health_issues.crs == deprivation_indicator.crs)
+
+join = gpd.sjoin(health_issues, deprivation_indicator, how='inner', lsuffix='left', rsuffix='right')
+print(join)
+print(join.columns.values)
+
+# Find the mean, max and min MDM rank per Small Area and print using the format string method.
+max_MDM = max_dataset(deprivation_indicator,"MDM_rank")
+min_MDM = min_dataset(deprivation_indicator,"MDM_rank")
+mean_MDM = mean_dataset(deprivation_indicator,"MDM_rank")
+
+max_MDM = join["MDM_rank"].max()
+min_MDM = join["MDM_rank"].min()
+mean_MDM = join["MDM_rank"].mean()
+
+print("{:.2f} is the maximum multiple deprivation rank per small area population.".format(max_MDM))
+print("{:.2f} is the minimum multiple deprivation rank per small area population.".format(min_MDM))
+print("{:.2f} is the mean multiple deprivation rank per small area population.".format(mean_MDM))
+
+# A scatter plot comparing MDM and Long-term Health Problems
+df = join
+df.plot(kind='scatter',x='MDM_rank',y='PC_LTHP',color='r')
+plt.savefig('scatter.png')
+
+# ---------------------------------------------------------------------------------------------------------------------
+# create a figure of size 10x10 (representing the page size in inches)
+fig, ax = plt.subplots(1, 1, figsize=(10, 10), subplot_kw=dict(projection=myCRS))
+
+# make a colorbar that stays in line with our map
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.1, axes_class=plt.Axes)
+
+# plot the MDM data on the map
+MDM_plot = deprivation_indicator.plot(column="MDM_rank", ax=ax, vmin=1, vmax=4540, cmap='plasma',
+                      legend=True, cax=cax, legend_kwds={'label': 'Multiple Deprivation Rank'})
+
+
+# add county outlines to the map.
+countyoutlines()
+county_handles = generate_handles([''], ['none'], edge='g')
+
+waterfeature()
+water_handle = generate_handles(['Lakes'], ['mediumblue'])
+
+# add legend.
+handles = water_handle + county_handles
+labels = ['Lakes', 'County Boundaries']
+leg()
+
+# add a scale bar.
+scale_bar(ax, 40)
+
+# save the figure
+fig.savefig("MDR_map.png", dpi=300, bbox_inches='tight')
 
 # ------------------------------------------------------------------------------------------------------------
